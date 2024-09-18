@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -24,13 +24,19 @@ from __future__ import print_function
 import shop
 
 
-def shopSmart(orderList, fruitShops):
+def shopSmart(order_list, fruit_shops):
     """
-        orderList: List of (fruit, numPound) tuples
-        fruitShops: List of FruitShops
+        order_list: List of (fruit, numPound) tuples
+        fruit_shops: List of FruitShops
     """
-    "*** YOUR CODE HERE ***"
-    return None
+    best_shop = None
+    best_cost = 0
+    for sh in fruit_shops:
+        total_cost = sh.getPriceOfOrder(order_list)
+        if best_shop is None or total_cost < best_cost:
+            best_shop = sh
+            best_cost = total_cost
+    return best_shop
 
 
 if __name__ == '__main__':
@@ -41,6 +47,8 @@ if __name__ == '__main__':
     dir2 = {'apples': 1.0, 'oranges': 5.0}
     shop2 = shop.FruitShop('shop2', dir2)
     shops = [shop1, shop2]
-    print("For orders ", orders, ", the best shop is", shopSmart(orders, shops).getName())
+    print("For orders ", orders, ", the best shop is",
+          shopSmart(orders, shops).getName())
     orders = [('apples', 3.0)]
-    print("For orders: ", orders, ", the best shop is", shopSmart(orders, shops).getName())
+    print("For orders: ", orders, ", the best shop is",
+          shopSmart(orders, shops).getName())
