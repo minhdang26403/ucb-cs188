@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -18,6 +18,8 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+from game import Directions
+
 
 class SearchProblem:
     """
@@ -67,10 +69,10 @@ def tinyMazeSearch(problem):
     Returns a sequence of moves that solves tinyMaze.  For any other maze, the
     sequence of moves will be incorrect, so only use this for tinyMaze.
     """
-    from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem: SearchProblem):
     """
@@ -86,18 +88,18 @@ def depthFirstSearch(problem: SearchProblem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return search(problem, util.Stack())
+
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return search(problem, util.Queue())
+
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return search(problem, util.PriorityQueue(), nullHeuristic)
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -106,10 +108,50 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return search(problem, util.PriorityQueue(), heuristic)
+
+
+class Node:
+    def __init__(self, state: tuple, path: list = [], path_cost: int = 0):
+        self.state = state
+        self.path = path
+        self.path_cost = path_cost
+
+
+def search(problem: SearchProblem, frontier, heuristic=nullHeuristic):
+    start_state = problem.getStartState()
+    if isinstance(frontier, util.Stack) or isinstance(frontier, util.Queue):
+        frontier.push(Node(start_state))
+    elif isinstance(frontier, util.PriorityQueue):
+        frontier.push(Node(start_state), 0)
+    else:
+        raise TypeError("Invalid type for frontier")
+
+    visited = set()
+
+    while not frontier.isEmpty():
+        node = frontier.pop()
+        state = node.state
+        if problem.isGoalState(state):
+            return node.path
+        if state in visited:
+            continue
+        visited.add(state)
+        for next_state, action, action_cost in problem.getSuccessors(state):
+            if next_state in visited:
+                continue
+            if isinstance(frontier, util.PriorityQueue):
+                cost = node.path_cost + action_cost
+                frontier.push(
+                    Node(next_state, node.path + [action], cost),
+                    cost + heuristic(next_state, problem))
+            else:
+                frontier.push(Node(next_state, node.path + [action]))
+
+    return []
 
 
 # Abbreviations
