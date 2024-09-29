@@ -26,10 +26,11 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
-import mdp, util
+import mdp
+import util
 
 from learningAgents import ValueEstimationAgent
-import collections
+
 
 class ValueIterationAgent(ValueEstimationAgent):
     """
@@ -40,7 +41,8 @@ class ValueIterationAgent(ValueEstimationAgent):
         for a given number of iterations using the supplied
         discount factor.
     """
-    def __init__(self, mdp: mdp.MarkovDecisionProcess, discount = 0.9, iterations = 100):
+
+    def __init__(self, mdp: mdp.MarkovDecisionProcess, discount=0.9, iterations=100):
         """
           Your value iteration agent should take an mdp on
           construction, run the indicated number of iterations
@@ -56,7 +58,7 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.mdp = mdp
         self.discount = discount
         self.iterations = iterations
-        self.values = util.Counter() # A Counter is a dict with default 0
+        self.values = util.Counter()  # A Counter is a dict with default 0
         self.runValueIteration()
 
     def runValueIteration(self):
@@ -64,7 +66,16 @@ class ValueIterationAgent(ValueEstimationAgent):
           Run the value iteration algorithm. Note that in standard
           value iteration, V_k+1(...) depends on V_k(...)'s.
         """
-        "*** YOUR CODE HERE ***"
+        for _ in range(self.iterations):
+            new_values = util.Counter()
+            for state in self.mdp.getStates():
+                q_values = [self.computeQValueFromValues(state, action)
+                            for action in self.mdp.getPossibleActions(state)]
+                if not q_values:
+                    new_values[state] = 0
+                    continue
+                new_values[state] = max(q_values)
+            self.values = new_values
 
     def getValue(self, state):
         """
@@ -77,8 +88,12 @@ class ValueIterationAgent(ValueEstimationAgent):
           Compute the Q-value of action in state from the
           value function stored in self.values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        q_value = 0
+        for next_state, prob in self.mdp.getTransitionStatesAndProbs(state, action):
+            q_value += prob * (self.mdp.getReward(state, action, next_state)
+                               + self.discount * self.getValue(next_state))
+
+        return q_value
 
     def computeActionFromValues(self, state):
         """
@@ -89,8 +104,13 @@ class ValueIterationAgent(ValueEstimationAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return None.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        possible_actions = self.mdp.getPossibleActions(state)
+        if not possible_actions:
+            return None
+        best_action = max(possible_actions,
+                          key=lambda action: self.computeQValueFromValues(state, action))
+
+        return best_action
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
